@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_home"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.cyrusdeapolonia.ecceprojectblue.HomeActivity">
+
+    <RelativeLayout
+        android:id="@+id/activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.example.aijacruz.eceprojectblue.MainActivity"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/course"
+            android:id="@+id/imgbtn_course"
+            android:layout_above="@+id/txv_coursereview"
+            android:layout_alignParentEnd="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="How would you like to access preexisting reviews?"
+            android:textSize="30sp"
+            android:layout_marginBottom="22dp"
+            android:layout_above="@+id/imgbtn_course"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/prof"
+            android:id="@+id/imgbtn_prof"
+            android:layout_above="@+id/txv_coursereview"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:text="Prof Based"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txv_profreview"
+            android:textSize="24sp"
+            android:layout_alignBaseline="@+id/txv_coursereview"
+            android:layout_alignBottom="@+id/txv_coursereview"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="17dp" />
+
+        <TextView
+            android:text="Course Based"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txv_coursereview"
+            android:textSize="23sp"
+            android:layout_marginBottom="133dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/imgbtn_course" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

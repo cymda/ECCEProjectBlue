@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_create_review"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.cyrusdeapolonia.ecceprojectblue.CreateReviewActivity">
+
+    <TextView
+        android:text="Name of Professor:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="28dp"
+        android:id="@+id/txv_professorname"
+        android:textSize="18sp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_submitreview"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:text="Submit" />
+
+    <TextView
+        android:text="Type your review below:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView7"
+        android:textSize="18sp"
+        android:layout_above="@+id/btn_submitreview"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="123dp" />
+
+    <CheckBox
+        android:text="CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cbx_recommend"
+        android:layout_above="@+id/textView7"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:text="Would you recommend him/her?"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView6"
+        android:textSize="18sp"
+        android:layout_above="@+id/cbx_recommend"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:text="Course"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txv_coursetitle"
+        android:textSize="20sp"
+        android:layout_below="@+id/txv_professorname"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:text="Rating:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView4"
+        android:textSize="18sp"
+        android:layout_above="@+id/textView6"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="31dp" />
+
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rbr_rating"
+        android:layout_above="@+id/cbx_recommend"
+        android:layout_toEndOf="@+id/txv_coursetitle"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="38dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:ems="10"
+        android:id="@+id/edt_comment"
+        android:layout_below="@+id/cbx_recommend"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="32dp" />
+
+</RelativeLayout>
