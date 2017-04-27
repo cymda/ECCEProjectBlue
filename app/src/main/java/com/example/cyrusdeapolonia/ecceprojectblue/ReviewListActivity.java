@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class ReviewListActivity extends AppCompatActivity {
     ArrayList<Review> mReviewList = null;
     ArrayAdapter<Review> mAdapter = null;
+    boolean fromPause = false;
 
     //gawing global yung coursetitle at professor name. pati sa ibang activities na nakalist view
 
@@ -81,7 +82,17 @@ public class ReviewListActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume(){
-        ///////////////////////////ask sir francis
+    protected void onPause() {
+        super.onPause();
+        fromPause = true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(fromPause){
+            mAdapter.notifyDataSetChanged();
+        }
+        fromPause = false;
     }
 }

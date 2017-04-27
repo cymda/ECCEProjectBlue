@@ -15,6 +15,7 @@ public class Professor {
 
     public void addGeneralReview(Review newReview){ mGeneralReviews.add(newReview); }
     public void addCourse(String newCourse){ mCourses.add(new Course(newCourse)); }
+    public void addCourse(Course course) { mCourses.add(course); }
 
     //adds a review to a particular course the prof is teaching
     public void addCourseReview(String courseTitle, Review newReview){

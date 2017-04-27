@@ -22,5 +22,5 @@ public class Review {
     public int getRating() { return mRating; }
     public boolean getRecommend() { return  mRecommend; }
 
-    public String toString() { return mUsername + ": " + mComment; }
+    public String toString() { return mUsername + ":" + "\n" + mComment; }
 }

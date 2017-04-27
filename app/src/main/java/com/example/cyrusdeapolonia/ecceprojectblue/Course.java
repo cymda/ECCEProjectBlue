@@ -7,8 +7,8 @@ import java.util.ArrayList;
  */
 
 public class Course {
-    String mCourseTitle = "";
-    ArrayList<Review> mReviews = new ArrayList<>();
+    private String mCourseTitle = "";
+    private ArrayList<Review> mReviews = new ArrayList<>();
 
     public Course(String courseTitle){
         mCourseTitle = courseTitle;

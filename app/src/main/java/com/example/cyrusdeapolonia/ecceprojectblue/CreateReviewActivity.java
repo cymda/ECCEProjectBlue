@@ -43,6 +43,7 @@ public class CreateReviewActivity extends AppCompatActivity {
 
                         Review newReview = new Review(app.getUser(), comment, rating, recommend);
                         app.addReview(newReview, professorName, courseTitle);
+                        app.saveProfessorList();
 
                         finish();
                     }

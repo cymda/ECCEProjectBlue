@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -15,15 +16,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ECCEProjectBlueApp app = (ECCEProjectBlueApp) getApplication();
-        app.initializeUsers();
-        app.initializeProfessors();
+        final ECCEProjectBlueApp app = (ECCEProjectBlueApp) getApplication();
+        app.initializeLists();
+
+        if(app.loadUserList() && app.loadProfessorList())
+            Toast.makeText(MainActivity.this, "File loaded", Toast.LENGTH_SHORT).show();
+
 
         final EditText edtUsername = (EditText) findViewById(R.id.edt_username);
         final EditText edtPassword = (EditText) findViewById(R.id.edt_password);
 
-        edtUsername.setText("Cyrus"); //temporary
-        edtPassword.setText("c"); //temporary
+        String userApp = app.getUserApp();
+        edtUsername.setText(userApp);
+        edtPassword.setText(app.getUserPasswordApp());
+
+        final CheckBox cbxRememberMe = (CheckBox) findViewById(R.id.cbx_remember);
+
+        if(!userApp.equals("")) cbxRememberMe.setChecked(true);
 
         Button btnLogin = (Button) findViewById(R.id.btn_login);
         btnLogin.setOnClickListener(
@@ -33,9 +42,10 @@ public class MainActivity extends AppCompatActivity {
                         String username = edtUsername.getText().toString();
                         String password = edtPassword.getText().toString();
 
-                        ECCEProjectBlueApp app = (ECCEProjectBlueApp) getApplication();
                         if( app.userExists(username, password) ) {
                             app.setUser(username);
+                            if(cbxRememberMe.isChecked()) app.saveUserApp(username, password);
+                            else app.saveUserApp("", "");
                             Intent launchintent = new Intent(MainActivity.this, HomeActivity.class);
                             startActivity(launchintent);
                         }
