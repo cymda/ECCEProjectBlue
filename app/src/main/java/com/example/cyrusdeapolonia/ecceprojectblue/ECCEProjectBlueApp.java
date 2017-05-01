@@ -5,6 +5,15 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,6 +30,113 @@ public class ECCEProjectBlueApp extends Application {
     private String mUsername = ""; //naka log in na user
     private ArrayList<Professor> mProfessorList = new ArrayList<>();
     private ArrayList<User> mUserList = new ArrayList<>();
+    private String mServer = "http://192.168.1.14:8000/";
+    private HttpClient mHttpClient = new DefaultHttpClient();
+
+
+    public String test(String professorname, String coursetitle) {
+        String contents = "";
+        HttpGet request = new HttpGet(mServer + "getReviewList?professorname="+professorname.replace(" ", "%20")+"&coursetitle="+coursetitle);
+        try {
+            HttpResponse response = mHttpClient.execute(request);
+            contents = EntityUtils.toString(response.getEntity());
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return "Error";
+        }
+        return contents;
+    }
+
+
+    //Server
+    public String getServerUrl() {
+        return mServer;
+    }
+    public boolean getUserListFromServer(){
+        String contents = "";
+        HttpGet request = new HttpGet(mServer + "getUserList");
+
+        try {
+            HttpResponse response = mHttpClient.execute(request);
+            contents = EntityUtils.toString(response.getEntity());
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            contents = "";
+        }
+        return parseUsersToList(contents);
+    }
+    public boolean getProfessorListFromServer(){
+        String contents = "";
+        HttpGet request = new HttpGet(mServer + "getProfessorList");
+
+        try {
+            HttpResponse response = mHttpClient.execute(request);
+            contents = EntityUtils.toString(response.getEntity());
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            contents = "";
+        }
+        return parseProfessorsToList(contents);
+    }
+    public boolean updateReviewListFromServer(String professorname, String coursetitle){
+        String contents = "";
+        String query = "?professorname="+professorname.replace(" ", "%20")+
+                "&coursetitle="+((coursetitle==null)?"General":coursetitle);
+        HttpGet request = new HttpGet(mServer + "getReviewList"+query);
+        try {
+            HttpResponse response = mHttpClient.execute(request);
+            contents = EntityUtils.toString(response.getEntity());
+            JSONArray reviewArray = new JSONArray(contents);
+            ArrayList<Review> reviewList = new ArrayList<>();
+            for(int i=0; i<reviewArray.length(); i++){
+                Review review = getReviewFromJSONObject(reviewArray.getJSONObject(i).toString());
+                reviewList.add(review);
+            }
+            int index = 0;
+            for(int i=0; i<mProfessorList.size(); i++){
+                if( mProfessorList.get(i).getName().equals(professorname) ){
+                    index = i;
+                }
+            }
+            if(coursetitle == null) mProfessorList.get(index).updateGeneralReviews(reviewList);
+            else mProfessorList.get(index).updateCourseReviews(reviewList, coursetitle);
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            contents = "";
+        }
+
+        return true;
+    }
+    public boolean registerUserToServer(String username, String password) {
+        User user = new User(username, password);
+        ArrayList<NameValuePair> postParams = new ArrayList<>();
+        postParams.add(new BasicNameValuePair("new_user", convertUserToJSONObject(user).toString()));
+        HttpPost httpPost = new HttpPost(mServer + "registerUser");
+        try {
+            httpPost.setEntity( new UrlEncodedFormEntity(postParams) );
+            HttpResponse response = mHttpClient.execute(httpPost);
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+    public boolean postReviewToServer(Review newReview, String professorname, String coursetitle){
+        ArrayList<NameValuePair> postParams = new ArrayList<>();
+        postParams.add(new BasicNameValuePair("new_review", convertReviewToJSONObject(newReview).toString()));
+        String query = "?professorname="+professorname.replace(" ", "%20")+
+                "&coursetitle="+((coursetitle==null)?"General":coursetitle);
+        HttpPost httpPost = new HttpPost(mServer + "postReview"+query);
+        try {
+            httpPost.setEntity( new UrlEncodedFormEntity(postParams) );
+            HttpResponse response = mHttpClient.execute(httpPost);
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
 
     //Shared preferences
     public void saveUserApp(String username, String password){
@@ -38,47 +154,9 @@ public class ECCEProjectBlueApp extends Application {
         SharedPreferences prefs = getSharedPreferences("edu.ateneo.cie199.ecceprojectblue", Context.MODE_PRIVATE);
         return prefs.getString("PASSWORD", "");
     }
+    //Share preferences
 
-    public void initializeLists(){
-        SharedPreferences prefs = getSharedPreferences("edu.ateneo.cie199.ecceprojectblue", Context.MODE_PRIVATE);
-        boolean appIsNotYetInitialized = prefs.getBoolean("INITIALIZE_NEEDED", true);
-        if(appIsNotYetInitialized){
-            //initialize users
-            mUserList.add(new User("Cyrus", "c"));
-            mUserList.add(new User("Aija", "a"));
-            mUserList.add(new User("Shin", "s"));
-            mUserList.add(new User("Maki", "m"));
-            mUserList.add(new User("Migs", "m"));
-            saveUserList();
-            mUserList.clear();
 
-            //initialize professors
-            String professorNames[] = {"Tiausas", "Dumlao", "Guico", "Parocha", "Oppus", "Mayuga"};
-            for(int i=0; i<professorNames.length; i++){
-                mProfessorList.add(new Professor(professorNames[i]));
-                for(int j=0; j<4; j++){
-                    mProfessorList.get(i).addGeneralReview(new Review(
-                            "Cyrus", professorNames[i]+" generalcomment"+j, j, true
-                    ));
-                }
-                for(int j=0; j<4; j++){
-                    String courseTitle = "P" + i + "C" + j;
-                    mProfessorList.get(i).addCourse(courseTitle);
-                    for(int k=0; k<3; k++){
-                        mProfessorList.get(i).addCourseReview(courseTitle, new Review(
-                                "Cyrus", professorNames[i]+" comment"+k,k+1,true
-                        ));
-                    }
-                }
-            }
-            saveProfessorList();
-            mProfessorList.clear();
-
-            SharedPreferences.Editor edt = prefs.edit();
-            edt.putBoolean("INITIALIZE_NEEDED", false);
-            edt.commit();
-        }
-    }
 
     public ArrayList<Professor> getProfessorList() { return mProfessorList; }
     public Professor getProfessor(String professorName){
@@ -100,7 +178,9 @@ public class ECCEProjectBlueApp extends Application {
         }
     }
 
+
     public String getUser() { return mUsername; }
+    public ArrayList<User> getUserList() { return mUserList; }
     public void setUser(String username) { mUsername = username; }
     public void addUser(String username, String password) { mUserList.add(new User(username, password)); }
     public boolean userExists(String username, String password){
@@ -118,146 +198,9 @@ public class ECCEProjectBlueApp extends Application {
         }
         return true;
     }
-    public boolean saveUserList() {
-        String filename = "userlist.txt";
-
-        String fileContents = "";
-
-        JSONObject object = new JSONObject();
-        JSONArray userArray = new JSONArray();
-        for(int i=0; i<mUserList.size(); i++){
-            userArray.put(convertUserToJSONObject(mUserList.get(i)));
-        }
-
-        try {
-            object.put("users", userArray);
-        } catch (Exception e){
-            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
-        }
-
-        fileContents = object.toString();
-
-        return writeFile(filename, fileContents);
-    }
-    public boolean loadUserList(){
-        String filename = "userlist.txt";
-
-        String loadPath = getStoragePath();
-
-        /* Check if file exists */
-        File loadFile = new File(loadPath, filename);
-        if (loadFile.exists() == false) {
-            Log.e("ECCEProjectBlueApp", "File not loaded because it does not exist");
-            return false;
-        }
-
-        String contents = "";
-        try {
-            FileInputStream fis = new FileInputStream( loadFile );
-            while (fis.available() > 0) {
-                byte buf[] = new byte[32];
-                int bytesRead = fis.read(buf, 0, 32);
-                contents += new String(buf, 0, bytesRead);
-            }
-
-            fis.close();
-        } catch (Exception e) {
-            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
-            return false;
-        }
-
-        Log.d("ECCEProjectBlueApp", "File Read Done:");
-        Log.d("ECCEProjectBlueApp", "    " + contents );
-
-        return parseUsersToList(contents);
-//        return contents;
-    }
-    private boolean parseUsersToList(String contents){
-        JSONObject object;
-        ArrayList<User> userList = new ArrayList<>();
-        try {
-            object = new JSONObject(contents);
-            JSONArray userArray = object.getJSONArray("users");
-            for(int i=0; i<userArray.length(); i++){
-                JSONObject userObject =  userArray.getJSONObject(i);
-                String username = userObject.getString("username");
-                String password = userObject.getString("password");
-                userList.add(new User(username, password));
-            }
-        } catch (Exception e){
-            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
-            return false;
-        }
-
-        mUserList = userList;
-        return true;
-    }
 
 
-    public boolean loadProfessorList(){
-        String filename = "professorlist.txt";
-
-        String loadPath = getStoragePath();
-        File loadFile = new File(loadPath, filename);
-        if (loadFile.exists() == false) {
-            Log.e("ECCEProjectBlueApp", "File not loaded because it does not exist");
-            return false;
-        }
-
-        String contents = "";
-        try {
-            FileInputStream fis = new FileInputStream( loadFile );
-            while (fis.available() > 0) {
-                byte buf[] = new byte[32];
-                int bytesRead = fis.read(buf, 0, 32);
-                contents += new String(buf, 0, bytesRead);
-            }
-            fis.close();
-        } catch (Exception e) {
-            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
-            return false;
-        }
-
-        return parseProfessorsToList(contents);
-    }
-
-    public boolean saveProfessorList() {
-        String filename = "professorlist.txt";
-        String fileContents = "";
-
-        JSONObject object = new JSONObject();
-        JSONArray professorArray = new JSONArray();
-        for(int i=0; i<mProfessorList.size(); i++){
-            professorArray.put(convertProfessorToJSONObject(mProfessorList.get(i)));
-        }
-        try {
-            object.put("professors", professorArray);
-        } catch (Exception e){
-            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
-        }
-
-        fileContents = object.toString();
-
-        return writeFile(filename, fileContents);
-    }
-
-    private boolean parseProfessorsToList(String contents){
-        ArrayList<Professor> professorList = new ArrayList<>();
-        try {
-            JSONObject object = new JSONObject(contents);
-            JSONArray professorArray = object.getJSONArray("professors");
-            for(int i=0; i<professorArray.length(); i++){
-                professorList.add(getProfessorFromJSONObject(professorArray.getJSONObject(i).toString()));
-            }
-        } catch (Exception e){
-            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
-            return false;
-        }
-
-        mProfessorList = professorList;
-        return true;
-    }
-
+    //JSON
     private JSONObject convertProfessorToJSONObject(Professor professor){
         JSONObject object = new JSONObject();
 
@@ -318,6 +261,7 @@ public class ECCEProjectBlueApp extends Application {
             JSONObject object = new JSONObject(contents);
 
             //Get professor name
+
             Professor professor = new Professor(object.getString("professorname"));
 
             //Get general review list
@@ -378,6 +322,186 @@ public class ECCEProjectBlueApp extends Application {
             Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
         }
         return object;
+    }
+
+    private boolean parseUsersToList(String contents){
+        JSONObject object;
+        ArrayList<User> userList = new ArrayList<>();
+        try {
+            object = new JSONObject(contents);
+            JSONArray userArray = object.getJSONArray("users");
+            for(int i=0; i<userArray.length(); i++){
+                JSONObject userObject =  userArray.getJSONObject(i);
+                String username = userObject.getString("username");
+                String password = userObject.getString("password");
+                userList.add(new User(username, password));
+            }
+        } catch (Exception e){
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return false;
+        }
+
+        mUserList = userList;
+        return true;
+    }
+    private boolean parseProfessorsToList(String contents){
+        ArrayList<Professor> professorList = new ArrayList<>();
+        try {
+            JSONObject object = new JSONObject(contents);
+            JSONArray professorArray = object.getJSONArray("professors");
+            for(int i=0; i<professorArray.length(); i++){
+                professorList.add(getProfessorFromJSONObject(professorArray.getJSONObject(i).toString()));
+            }
+        } catch (Exception e){
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return false;
+        }
+
+        mProfessorList = professorList;
+        return true;
+    }
+
+
+    //File I/O
+    public void initializeLists(){
+        SharedPreferences prefs = getSharedPreferences("edu.ateneo.cie199.ecceprojectblue", Context.MODE_PRIVATE);
+        boolean appIsNotYetInitialized = prefs.getBoolean("INITIALIZE_NEEDED", true);
+        if(appIsNotYetInitialized){
+            //initialize users
+            mUserList.add(new User("Cyrus", "c"));
+            mUserList.add(new User("Aija", "a"));
+            mUserList.add(new User("Shin", "s"));
+            mUserList.add(new User("Maki", "m"));
+            mUserList.add(new User("Migs", "m"));
+            saveUserList();
+            mUserList.clear();
+
+            //initialize professors
+            String professorNames[] = {"Tiausas", "Dumlao", "Guico", "Parocha", "Oppus", "Mayuga"};
+            for(int i=0; i<professorNames.length; i++){
+                mProfessorList.add(new Professor(professorNames[i]));
+                for(int j=0; j<4; j++){
+                    mProfessorList.get(i).addGeneralReview(new Review(
+                            "Cyrus", professorNames[i]+" generalcomment"+j, j, true
+                    ));
+                }
+                for(int j=0; j<4; j++){
+                    String courseTitle = "P" + i + "C" + j;
+                    mProfessorList.get(i).addCourse(courseTitle);
+                    for(int k=0; k<3; k++){
+                        mProfessorList.get(i).addCourseReview(courseTitle, new Review(
+                                "Cyrus", professorNames[i]+" comment"+k,k+1,true
+                        ));
+                    }
+                }
+            }
+            saveProfessorList();
+            mProfessorList.clear();
+
+            SharedPreferences.Editor edt = prefs.edit();
+            edt.putBoolean("INITIALIZE_NEEDED", false);
+            edt.commit();
+        }
+    }
+    public boolean saveUserList() {
+        String filename = "userlist.txt";
+
+        String fileContents = "";
+
+        JSONObject object = new JSONObject();
+        JSONArray userArray = new JSONArray();
+        for(int i=0; i<mUserList.size(); i++){
+            userArray.put(convertUserToJSONObject(mUserList.get(i)));
+        }
+
+        try {
+            object.put("users", userArray);
+        } catch (Exception e){
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+        }
+
+        fileContents = object.toString();
+
+        return writeFile(filename, fileContents);
+    }
+    public boolean loadUserList(){
+        String filename = "userlist.txt";
+
+        String loadPath = getStoragePath();
+
+        /* Check if file exists */
+        File loadFile = new File(loadPath, filename);
+        if (loadFile.exists() == false) {
+            Log.e("ECCEProjectBlueApp", "File not loaded because it does not exist");
+            return false;
+        }
+
+        String contents = "";
+        try {
+            FileInputStream fis = new FileInputStream( loadFile );
+            while (fis.available() > 0) {
+                byte buf[] = new byte[32];
+                int bytesRead = fis.read(buf, 0, 32);
+                contents += new String(buf, 0, bytesRead);
+            }
+
+            fis.close();
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return false;
+        }
+
+        Log.d("ECCEProjectBlueApp", "File Read Done:");
+        Log.d("ECCEProjectBlueApp", "    " + contents );
+
+        return parseUsersToList(contents);
+//        return contents;
+    }
+
+    public boolean loadProfessorList(){
+        String filename = "professorlist.txt";
+
+        String loadPath = getStoragePath();
+        File loadFile = new File(loadPath, filename);
+        if (loadFile.exists() == false) {
+            Log.e("ECCEProjectBlueApp", "File not loaded because it does not exist");
+            return false;
+        }
+
+        String contents = "";
+        try {
+            FileInputStream fis = new FileInputStream( loadFile );
+            while (fis.available() > 0) {
+                byte buf[] = new byte[32];
+                int bytesRead = fis.read(buf, 0, 32);
+                contents += new String(buf, 0, bytesRead);
+            }
+            fis.close();
+        } catch (Exception e) {
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+            return false;
+        }
+
+        return parseProfessorsToList(contents);
+    }
+    public boolean saveProfessorList() {
+        String filename = "professorlist.txt";
+        String fileContents = "";
+
+        JSONObject object = new JSONObject();
+        JSONArray professorArray = new JSONArray();
+        for(int i=0; i<mProfessorList.size(); i++){
+            professorArray.put(convertProfessorToJSONObject(mProfessorList.get(i)));
+        }
+        try {
+            object.put("professors", professorArray);
+        } catch (Exception e){
+            Log.e("ECCEProjectBlueApp", "Exception occurred: " + e.getMessage());
+        }
+
+        fileContents = object.toString();
+
+        return writeFile(filename, fileContents);
     }
 
     private String getStoragePath() {

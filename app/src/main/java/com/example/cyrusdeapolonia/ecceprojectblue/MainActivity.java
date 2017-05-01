@@ -1,6 +1,7 @@
 package com.example.cyrusdeapolonia.ecceprojectblue;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,7 +10,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
+    private LoadFromServer mLoadFromServer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,11 +21,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final ECCEProjectBlueApp app = (ECCEProjectBlueApp) getApplication();
-        app.initializeLists();
-
-        if(app.loadUserList() && app.loadProfessorList())
-            Toast.makeText(MainActivity.this, "File loaded", Toast.LENGTH_SHORT).show();
-
+        mLoadFromServer = new LoadFromServer();
+        mLoadFromServer.execute();
+//        THIS IS FOR FILE I/O
+//        app.initializeLists();
+//        if(app.loadUserList() && app.loadProfessorList())
+//            Toast.makeText(MainActivity.this, "File loaded", Toast.LENGTH_SHORT).show();
 
         final EditText edtUsername = (EditText) findViewById(R.id.edt_username);
         final EditText edtPassword = (EditText) findViewById(R.id.edt_password);
@@ -66,5 +71,25 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    private class LoadFromServer extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            ECCEProjectBlueApp app = (ECCEProjectBlueApp) getApplication();
+            boolean loadFailed = true;
+            while(loadFailed){
+                if(app.getUserListFromServer() && app.getProfessorListFromServer())
+                    loadFailed = false;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Toast.makeText(MainActivity.this, "User and professor list successfully loaded", Toast.LENGTH_SHORT).show();
+            super.onPostExecute(aVoid);
+            return;
+        }
     }
 }

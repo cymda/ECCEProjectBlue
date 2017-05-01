@@ -31,7 +31,7 @@ public class ReviewActivity extends AppCompatActivity {
         if( courseTitle == null ){
             reviewList = professor.getGeneralReviews();
             String general = "General";
-            txvCourseTitle.setText(general); //<--- parang may sinabi na hindi daw pwede ideretso
+            txvCourseTitle.setText(general);
         }
         else {
             reviewList = professor.getCourseReviews(courseTitle);

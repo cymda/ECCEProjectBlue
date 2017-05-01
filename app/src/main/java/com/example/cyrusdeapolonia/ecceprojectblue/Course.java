@@ -20,6 +20,10 @@ public class Course {
 
     public ArrayList<Review> getReviews() { return mReviews; }
 
+    public void updateCourseReviews(ArrayList<Review> reviews){
+        mReviews = reviews;
+    }
+
     public String getCourseTitle() {return mCourseTitle; }
 
     public void deleteReview(int index){

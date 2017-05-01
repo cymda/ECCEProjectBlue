@@ -26,6 +26,18 @@ public class Professor {
         }
     }
 
+    public void updateGeneralReviews(ArrayList<Review> generalReviews){
+        mGeneralReviews = generalReviews;
+    }
+
+    public void updateCourseReviews(ArrayList<Review> courseReviews, String courseTitle){
+        for(int i=0; i<mCourses.size(); i++){
+            if( courseTitle.equals( mCourses.get(i).getCourseTitle() ) ){
+                mCourses.get(i).updateCourseReviews(courseReviews);
+                break;
+            }
+        }
+    }
 
     ////////////////////////getters////////////////////////
     public String getName(){ return mName; }

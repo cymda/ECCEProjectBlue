@@ -11,15 +11,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.cyrusdeapolonia.ecceprojectblue.ReviewListActivity">
 
-    <Button
-        android:text="Add your own!"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/btn_addreview"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true" />
-
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -36,6 +27,34 @@
         android:textSize="30sp"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="Add your own!"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_addreview"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="32dp" />
+
+    <TextView
+        android:text="Ave.Rating: __"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txv_averating"
+        android:textSize="18sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:text="__/__ recommends this prof"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/txv_recommendno"
+        android:textSize="18sp"
+        android:layout_alignBaseline="@+id/txv_averating"
+        android:layout_alignBottom="@+id/txv_averating"
         android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
